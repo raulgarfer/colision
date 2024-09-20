@@ -1,0 +1,8 @@
+DEF .__.ABS. 0x0
+DEF l__DATA 0x0
+DEF l__CODE 0x15
+DEF s__CODE 0x4000
+DEF s__DATA 0x4015
+DEF _collision_check 0x4000
+DEF _main 0x4010
+LOAD obj/colision.ihx

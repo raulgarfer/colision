@@ -1,0 +1,44 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 1.
+Hexadecimal [16-Bits]
+
+
+
+                              1 .module collisions
+                              2 ;;input Hl como array a comprobar. El orden debe ser el siguiente:
+                              3 ;; Hl+0 = X entidad 1
+                              4 ;; HL+1 = ancho entidad 1
+                              5 ;; HL+2 = X entidad 2
+                              6 ;; HL+3 = ancho entidad 2
+                              7 ;; Hl+4 = 
+                              8 ;; HL+5 = 
+                              9 ;; HL+6 = 
+                             10 ;; HL+7 = 
+                             11 ;; se comprueba si dos objetos se colisionan en X e Y
+                             12 ;;
+                             13 ;; A--ITEM1--B  C--ITEM2--D
+                             14 ;; es comprobado B contra C. Si B es menor que C, no hay choque
+                             15 ;; es comprobado D contra A. Si D es menor que A, no hay choque
+                             16 ;;
+   0000                      17 _collision_check::
+                             18     ;;cargamos primero la X de entidad 1 y le sumamos el ancho
+   0000 7E            [ 7]   19         ld a,(hl)       ;;A  = X entidad 1
+   0001 23            [ 6]   20         inc hl          ;;HL = ancho entidad 1
+   0002 86            [ 7]   21         add a,(hl)      ;;A += ancho entidad 1
+                             22     ;;restamos la X de entidad 2
+   0003 23            [ 6]   23         inc hl          ;;HL = X entidad 2
+   0004 96            [ 7]   24         sub a,(hl)      ;;A -= X entidad 2
+                             25     ;;Si X entidad 2 es mayor que derecha Entidad 1, no hay choque 
+   0005 38 08         [12]   26         jr c,no_collision  
+                             27     ;;comprobamos derecha de entidad 2 contra X de entidad 1  
+   0007 23            [ 6]   28         inc hl          ;;HL = X entidad 2
+   0008 7E            [ 7]   29         ld a,(hl)       ;;A  = X entidad 2
+   0009 23            [ 6]   30         inc hl 
+   000A 86            [ 7]   31         add a,(hl) 
+   000B 23            [ 6]   32         inc hl 
+   000C 96            [ 7]   33         sub a,(hl)
+   000D 38 00         [12]   34         jr c,no_collision
+                             35 
+                             36         
+   000F                      37 no_collision:
+   000F C9            [10]   38 ret
+                             39 
