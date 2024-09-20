@@ -1,10 +1,7 @@
 ;;-----------------------------LICENSE NOTICE------------------------------------
 ;;  This file is part of CPCtelera: An Amstrad CPC Game Engine
 ;;
-;;  Copyright (C) 2022 Néstor Gracia (https://github.com/nestornillo)
-;;  Copyright (C) 2023 Joaquín Ferrero (https://github.com/joaquinferrero)
 ;;  Copyright (C) 2024 raulgarfer (https://github.com/raulgarfer)
-;;  Copyright (C) 2024 cpcitor (https://github.com/cpcitor/)
 ;;  Copyright (C) 2024 ronaldo / Fremos / Cheesetea / ByteRealms (@FranGallegoBR)
 ;;
 ;;  This program is free software: you can redistribute it and/or modify
@@ -20,78 +17,41 @@
 ;;  You should have received a copy of the GNU Lesser General Public License
 ;;  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;-------------------------------------------------------------------------------
-.module cpct_maths
-
+.module collisions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Function: cpct_divideby10
+;; Function: cpct_detect_collision
 ;;
-;; Returns the result of dividing an integer number by 10.
+;; Returns if there was a collision betwwen two items.
 ;;
 ;; C Definition:
-;;    <u8> <cpct_divideby10> (u8 dividend) __z88dk_fastcall;
+;;    <u8> <cpct_detect_collision> (u8* items) __z88dk_fastcall;
 ;;
 ;; Input Parameters (1 Byte):
-;;    (1B A) dividend  - Number to be divided by 10
+;;    (2B HL) Array - Beginnig of data in use
 ;;
-;; Assembly call (Input parameter on register A):
+;; Assembly call (Input parameter on register HL):
 ;;    > call cpct_divideby10_asm
 ;;
 ;; Return Value (Assembly calls, return in A):
-;;    <u8> - Result of the operation.
+;;    <u8> - Result of the collision check.
 ;;
 ;; Parameter Restrictions:
-;;    * *dividend* must be among 0 and 255.
+;;    * No checking of valid data.
 ;;
 ;; Details:
-;;    This function calculates the integer quotient of dividing a given number
-;; by 10. The function does not return a remainder, nor does it use decimals in
-;; its operations.
-;;
-;;    For achieving its result in a fast way, this function uses an approximation
-;; that fails when the input value is greater than 127, so a correction is made
-;; on those cases in order to get the correct result for all 256 possible input
-;; values.
-;;
-;;    A number divided by 10 is equal to that number divided by 2 and multiplied
-;; by 1/5 (0.20). For example, if we consider N = 20, then:
-;; (start code)
-;; 1) 20/2 * 1/5
-;; 2) 10/1 * 1/5
-;; 3) 10/5
-;; 4) 2
-;; So, 20/10 = 2.
-;; (end code)
-;;
-;;    The fraction 1/5 is close to 13/64, so it is possible to approximate the
-;; division N/10 as (N/2)*(13/64). That approximation works well up to 127, but
-;; then it 'shifts' from the actual result of N/10. It is necessary to adjust for
-;; higher values.
-;; (start code)
-;; N/10 = N/2 * 1/5, which is close to N/2 * 13/64.
-;; The approximation 13/64 can be refactored to:
-;; 1) (1   + 4   +  8) / 64, which is equal to
-;; 2) (1/8 + 4/8 + 8/8 ) / 8
-;; 3) (1/8 + 1/2 + 1/1 ) / 8
-;; Previously we omitted N/2, let's insert it now:
-;; 4) N/2 * 1 / 5 is similar to
-;; 5) N/2 * (1/8  + 1/2 + 1/1) / 8, which refactors to
-;; 6)       (N/16 + N/4 + N/2) / 8
-;; (end code)
-;; (start code)
-;; Taking the example of number 125, and rounding down divisions:
-;; 1) (125/16 + 125/4 + 125/2) / 8
-;; 2) (   7   +   31  +   62 ) / 8
-;; 3) (          100         ) / 8
-;; 4)             12
-;; (end code)
-;;
-;; This is a simplified explanation, the code actually groups partial results
-;; together so as to minimize the number of shift-right operations,
-;; and it happens that the result is more precise that way.
+;;   Esta funcion calcula si ha habido colision entre dos estidades conocidas.
+;; Para ello calcula los limites de cada entidad y los compara con la otra entidad.
+;; 
+;; A--ENT1--B  C--ENT2--D
+;;    Para la primera comprobacion se calcula posicion X(A) mas el ancho de la entidad(B).
+;; Despues se le resta la X(C) de la segunda entidad. Si el resultado es positivo 
+;; (C<B,no hay acarreo),se sigue calculando el sigueinte paso. Si el resultado es 
+;; negativo (C>B,hay acarreo), termina la funcion, retornando en A un 0. 
+;;    Si hay colision , se retorna en A un 1.
 ;;
 ;; Destroyed Register values:
-;;    AF, BC
+;;    AF, HL
 ;;
 ;; Required memory:
 ;;    C-bindings - 21 bytes
@@ -108,12 +68,11 @@
 ;; (end code)
 ;;
 ;; Credits:
-;;    Original code by Néstor Gracia 2022. Optimized by Joaquín Ferrero & Néstor
-;; Gracia in 2023
+;;    Adapted code by Fran Gallego. 
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-.module collisions
+
 ;;input Hl como array a comprobar. El orden debe ser el siguiente:
 ;; Hl+0 = X entidad 1
 ;; HL+1 = ancho entidad 1
