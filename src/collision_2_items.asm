@@ -28,43 +28,42 @@
 ;;    <u8> <cpct_detect_collision> (u8* items) __z88dk_fastcall;
 ;;
 ;; Input Parameters (1 Byte):
-;;    (2B HL) Array - Beginnig of data in use
+;;    (2B HL) Array - Start of the data in use
 ;;
-;; Assembly call (Input parameter on register HL):
+;; Assembly call (Input parameter in HL register):
 ;;    > call cpct_divideby10_asm
 ;;
-;; Return Value (Assembly calls, return in A):
+;; Return Value (Assembly call, returned in A register):
 ;;    <u8> - Result of the collision check.
 ;;
 ;; Parameter Restrictions:
-;;    * No checking of valid data.
+;;    * No data validity check is performed.
 ;;
-;; Details:
-;;   Esta funcion calcula si ha habido colision entre dos estidades conocidas.
-;; Para ello calcula los limites de cada entidad y los compara con la otra entidad.
-;; 
+;; Description:
+;;   This function checks if a collision has occurred between two known entities.
+;; It does so by calculating the boundaries of each entity and comparing them with the other.
+;;
 ;; A--ENT1--B  C--ENT2--D
 ;;
-;;    Para la primera comprobacion se calcula posicion X(A) mas el ancho de la entidad(B).
-;; Despues se le resta la X(C) de la segunda entidad. Si el resultado es positivo 
-;; (C<B,no hay acarreo),se sigue calculando el sigueinte paso. Si el resultado es 
-;; negativo (C>B,hay acarreo), termina la funcion, retornando en A un 0. 
+;;    For the first check, the X position of entity 1 (A) is added to its width (B).
+;; Then, the X position of the second entity (C) is subtracted from this result. If the result is positive 
+;; (C<B, no carry), the next step is calculated. If the result is negative (C>B, carry occurs), the function
+;; ends, returning 0 in A. 
 ;;
 ;; C--ENT2--D  A--ENT1--B  
-;;    Las siguientes comprobaciones son D contra A,en eje X. Tras esta comprobacion,
-;; se procede a comprobar las coordenadas, pero en eje Y. 
-;;    Si tras las cuatro comprobaciones hay colision , se retorna en A un 1.
+;;    The next checks are D against A, on the X axis. After this, the Y coordinates are checked in the same way.
+;;    If all four checks indicate a collision, 1 is returned in A.
 ;;
 ;; Destroyed Register values:
 ;;    AF, HL
 ;;
 ;; Required memory:
-;;    C-bindings - 32 +b bytes
-;;  ASM-bindings - 32 +b byte
+;;    C-bindings - 35 bytes
+;;  ASM-bindings - 35 bytes
 ;;
 ;; Time Measures:
 ;; (start code)
-;;     Case   | microSecs (us) | CPU Cycles
+;;     Case   | microSecs (µs) | CPU Cycles
 ;; -----------------------------------------
 ;;     Best   |      18        |     72
 ;; -----------------------------------------
@@ -79,55 +78,53 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; input Hl como array a comprobar. El orden debe ser el siguiente:
-;; Hl+0 = X entidad 1
-;; HL+1 = ancho entidad 1
-;; HL+2 = X entidad 2
-;; HL+3 = ancho entidad 2
-;; Hl+4 = Y entidad 1
-;; HL+5 = alto entidad 1
-;; HL+6 = Y entidad 2
-;; HL+7 = alto entidad 2
+;; Input HL as an array to check. The order should be as follows:
+;; HL+0 = X position of entity 1
+;; HL+1 = Width of entity 1
+;; HL+2 = X position of entity 2
+;; HL+3 = Width of entity 2
+;; HL+4 = Y position of entity 1
+;; HL+5 = Height of entity 1
+;; HL+6 = Y position of entity 2
+;; HL+7 = Height of entity 2
 ;;
-;;_collision_check::
-    ;;cargamos primero la X de entidad 1 y le sumamos el ancho
-        ld a,(hl)       ;;A  = X entidad 1
-        ld b,a          ;;B  = X entidad 1
+;; First, load the X position of entity 1 and add its width
+        ld a,(hl)       ;; A = X position of entity 1
+        ld b,a          ;; B = X position of entity 1
         inc hl          ;; 
-        add a,(hl)      ;;A += ancho entidad 1
+        add a,(hl)      ;; A += Width of entity 1
         inc hl          ;;
-        sub a,(hl)      ;;A -= X entidad 2
+        sub a,(hl)      ;; A -= X position of entity 2
             jr c,no_collision 
-    ;;comprobamos derecha de entidad 2 contra X de entidad 1  
-        ld a,(hl)         ;; A  = X entidad 2 
+;; Now check the right side of entity 2 against the X position of entity 1  
+        ld a,(hl)         ;; A = X position of entity 2 
         inc hl            ;;  
-        add a,(hl)        ;; A += ancho entidad 2
-        sub b             ;; A -= X entidad 1
+        add a,(hl)        ;; A += Width of entity 2
+        sub b             ;; A -= X position of entity 1
            jr c,no_collision
-    ;;Se ha comprobado que las dos entidades coinciden en el eje X.  
-    ;;Ahora comprobamos abajo de entidad 1 contra Y de entidad 2
+;; The two entities overlap on the X axis.  
+;; Now check the bottom of entity 1 against the Y position of entity 2
         inc hl            ;;
-        ld a,(hl)         ;; A  = Y entidad 1
-        ld b,a            ;; B  = Y de entidad 1
+        ld a,(hl)         ;; A = Y position of entity 1
+        ld b,a            ;; B = Y position of entity 1
         inc hl            ;;  
-        add a,(hl)        ;; A += alto entidad 1
+        add a,(hl)        ;; A += Height of entity 1
         inc hl            ;;
-        sub a,(hl)        ;; A -= Y entidad 2
+        sub a,(hl)        ;; A -= Y position of entity 2
             jr c,no_collision ;;
-    ;;comprobamos abajo de entidad 2 contra Y de entidad 1  
-        ld a,(hl)         ;; A  = Y entidad 2 
+;; Now check the bottom of entity 2 against the Y position of entity 1  
+        ld a,(hl)         ;; A = Y position of entity 2 
         inc hl            ;;  
-        add a,(hl)        ;; A += alto entidad 2
-        sub b             ;; recuperamos Y de entidad 1 y restamos
+        add a,(hl)        ;; A += Height of entity 2
+        sub b             ;; Restore Y position of entity 1 and subtract
             jr c,no_collision ;;
-    ;;  Ambas entidades coinciden en eje X e Y. Hay colision. Retornamos 
-    ;; un valor diferente a 0 en el registro A para declarar que ha habido choque
+;; Both entities overlap on both the X and Y axes. A collision has occurred.
+;; Return a non-zero value in register A to indicate a collision
         ld a,#1           ;; 
 ret
         
 no_collision:
-    ;;  Tras comprobar que no hay colision entre las dos entidades, retornamos un
-    ;; valor 0 para declarar que no hubo colision.
-        ld a,#0          ;;
+;; After confirming no collision, return 0 to indicate no collision occurred
+        ld a,#0           ;;
 
 
