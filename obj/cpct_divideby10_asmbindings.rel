@@ -1,0 +1,18 @@
+XL2
+H 1 areas 2 global symbols
+M cpct_collisions
+S .__.ABS. Def0000
+A _CODE size 23 flags 0 addr 0
+S cpct_collision_check_asm Def0000
+T 00 00
+R 00 00 00 00
+T 00 00 7E 47 23 86 23 96 38 18 7E 23 86 90 38 12
+R 00 00 00 00
+T 0E 00 23 7E 47 23 86 23 96 38 09 7E 23 86 90 38
+R 00 00 00 00
+T 1C 00 03 3E 01 C9
+R 00 00 00 00
+T 20 00
+R 00 00 00 00
+T 20 00 3E 00 C9
+R 00 00 00 00

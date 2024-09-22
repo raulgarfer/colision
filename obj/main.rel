@@ -1,16 +1,21 @@
 XL2
-H 2 areas 3 global symbols
+H 2 areas 6 global symbols
 M main.s
-S _collision_check Ref0000
+S _cpct_collision_check Ref0000
+S cpct_collision_check_asm Ref0000
 S .__.ABS. Def0000
-A _CODE size 5 flags 0 addr 0
+A _CODE size 8 flags 0 addr 0
 S _main Def0000
-A _DATA size 0 flags 0 addr 0
+A _DATA size C flags 0 addr 0
+S junk Def0008
+S _array Def0000
+T 00 00 10 04 10 04 20 04 20 04 DE AD BE EF
+R 00 00 01 00
 T 00 00
 R 00 00 00 00
-T 00 00 CD 00 00
-R 00 00 00 00 02 03 00 00
-T 03 00
+T 00 00 21 00 00 CD 00 00
+R 00 00 00 00 00 03 01 00 02 06 00 00
+T 06 00
 R 00 00 00 00
-T 03 00 18 FE
+T 06 00 18 FE
 R 00 00 00 00

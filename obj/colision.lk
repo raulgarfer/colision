@@ -7,7 +7,9 @@
 -k /home/papi/Documents/cpctelera/cpctelera/tools/sdcc-3.6.8-r9946/share/sdcc/lib/z80
 -l /home/papi/Documents/cpctelera/cpctelera/cpctelera.lib
 -l z80
-obj/collision_2_items.rel
+obj/check.rel
+obj/cpct_divideby10_asmbindings.rel
+obj/cpct_divideby10_cbindings.rel
 obj/main.rel
 
 -e

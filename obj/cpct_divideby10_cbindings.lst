@@ -1,0 +1,188 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 1.
+Hexadecimal [16-Bits]
+
+
+
+                              1 ;;-----------------------------LICENSE NOTICE------------------------------------
+                              2 ;;  This file is part of CPCtelera: An Amstrad CPC Game Engine
+                              3 ;;  Copyright (C) 2024 ronaldo / Fremos / Cheesetea / ByteRealms (@FranGallegoBR)
+                              4 ;;
+                              5 ;;  This program is free software: you can redistribute it and/or modify
+                              6 ;;  it under the terms of the GNU Lesser General Public License as published by
+                              7 ;;  the Free Software Foundation, either version 3 of the License, or
+                              8 ;;  (at your option) any later version.
+                              9 ;;
+                             10 ;;  This program is distributed in the hope that it will be useful,
+                             11 ;;  but WITHOUT ANY WARRANTY; without even the implied warranty of
+                             12 ;;  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+                             13 ;;  GNU Lesser General Public License for more details.
+                             14 ;;
+                             15 ;;  You should have received a copy of the GNU Lesser General Public License
+                             16 ;;  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+                             17 ;;-------------------------------------------------------------------------------
+                             18 .module cpct_collisions
+                             19 
+                             20 ;;
+                             21 ;; C bindings for <cpct_collision_2_items>
+                             22 ;;
+                             23 ;;   5 microSecs, 3 bytes
+                             24 ;;
+   0000                      25 _cpct_collision_check::
+                             26   
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 2.
+Hexadecimal [16-Bits]
+
+
+
+                             27    .include /collision_2_items.asm/
+                              1 ;;-----------------------------LICENSE NOTICE------------------------------------
+                              2 ;;  This file is part of CPCtelera: An Amstrad CPC Game Engine
+                              3 ;;
+                              4 ;;  Copyright (C) 2024 raulgarfer (https://github.com/raulgarfer)
+                              5 ;;  Copyright (C) 2024 ronaldo / Fremos / Cheesetea / ByteRealms (@FranGallegoBR)
+                              6 ;;
+                              7 ;;  This program is free software: you can redistribute it and/or modify
+                              8 ;;  it under the terms of the GNU Lesser General Public License as published by
+                              9 ;;  the Free Software Foundation, either version 3 of the License, or
+                             10 ;;  (at your option) any later version.
+                             11 ;;
+                             12 ;;  This program is distributed in the hope that it will be useful,
+                             13 ;;  but WITHOUT ANY WARRANTY; without even the implied warranty of
+                             14 ;;  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+                             15 ;;  GNU Lesser General Public License for more details.
+                             16 ;;
+                             17 ;;  You should have received a copy of the GNU Lesser General Public License
+                             18 ;;  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+                             19 ;;-------------------------------------------------------------------------------
+                             20 .module collisions
+                             21 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             22 ;;
+                             23 ;; Function: cpct_detect_collision
+                             24 ;;
+                             25 ;; Returns if there was a collision betwwen two items.
+                             26 ;;
+                             27 ;; C Definition:
+                             28 ;;    <u8> <cpct_detect_collision> (u8* items) __z88dk_fastcall;
+                             29 ;;
+                             30 ;; Input Parameters (1 Byte):
+                             31 ;;    (2B HL) Array - Beginnig of data in use
+                             32 ;;
+                             33 ;; Assembly call (Input parameter on register HL):
+                             34 ;;    > call cpct_divideby10_asm
+                             35 ;;
+                             36 ;; Return Value (Assembly calls, return in A):
+                             37 ;;    <u8> - Result of the collision check.
+                             38 ;;
+                             39 ;; Parameter Restrictions:
+                             40 ;;    * No checking of valid data.
+                             41 ;;
+                             42 ;; Details:
+                             43 ;;   Esta funcion calcula si ha habido colision entre dos estidades conocidas.
+                             44 ;; Para ello calcula los limites de cada entidad y los compara con la otra entidad.
+                             45 ;; 
+                             46 ;; A--ENT1--B  C--ENT2--D
+                             47 ;;
+                             48 ;;    Para la primera comprobacion se calcula posicion X(A) mas el ancho de la entidad(B).
+                             49 ;; Despues se le resta la X(C) de la segunda entidad. Si el resultado es positivo 
+                             50 ;; (C<B,no hay acarreo),se sigue calculando el sigueinte paso. Si el resultado es 
+                             51 ;; negativo (C>B,hay acarreo), termina la funcion, retornando en A un 0. 
+                             52 ;;
+                             53 ;; C--ENT2--D  A--ENT1--B  
+                             54 ;;    Las siguientes comprobaciones son D contra A,en eje X. Tras esta comprobacion,
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 3.
+Hexadecimal [16-Bits]
+
+
+
+                             55 ;; se procede a comprobar las coordenadas, pero en eje Y. 
+                             56 ;;    Si tras las cuatro comprobaciones hay colision , se retorna en A un 1.
+                             57 ;;
+                             58 ;; Destroyed Register values:
+                             59 ;;    AF, HL
+                             60 ;;
+                             61 ;; Required memory:
+                             62 ;;    C-bindings - 32 +b bytes
+                             63 ;;  ASM-bindings - 32 +b byte
+                             64 ;;
+                             65 ;; Time Measures:
+                             66 ;; (start code)
+                             67 ;;     Case   | microSecs (us) | CPU Cycles
+                             68 ;; -----------------------------------------
+                             69 ;;     Best   |      18        |     72
+                             70 ;; -----------------------------------------
+                             71 ;;     Worst  |      51        |     204
+                             72 ;; -----------------------------------------
+                             73 ;; Asm saving |      -2        |     -8
+                             74 ;; -----------------------------------------
+                             75 ;; (end code)
+                             76 ;;
+                             77 ;; Credits:
+                             78 ;;    Adapted code by Fran Gallego. 
+                             79 ;;
+                             80 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             81 ;;
+                             82 ;; input Hl como array a comprobar. El orden debe ser el siguiente:
+                             83 ;; Hl+0 = X entidad 1
+                             84 ;; HL+1 = ancho entidad 1
+                             85 ;; HL+2 = X entidad 2
+                             86 ;; HL+3 = ancho entidad 2
+                             87 ;; Hl+4 = Y entidad 1
+                             88 ;; HL+5 = alto entidad 1
+                             89 ;; HL+6 = Y entidad 2
+                             90 ;; HL+7 = alto entidad 2
+                             91 ;;
+                             92 ;;_collision_check::
+                             93     ;;cargamos primero la X de entidad 1 y le sumamos el ancho
+   0000 7E            [ 7]   94         ld a,(hl)       ;;A  = X entidad 1
+   0001 47            [ 4]   95         ld b,a          ;;B  = X entidad 1
+   0002 23            [ 6]   96         inc hl          ;; 
+   0003 86            [ 7]   97         add a,(hl)      ;;A += ancho entidad 1
+   0004 23            [ 6]   98         inc hl          ;;
+   0005 96            [ 7]   99         sub a,(hl)      ;;A -= X entidad 2
+   0006 38 18         [12]  100             jr c,no_collision 
+                            101     ;;comprobamos derecha de entidad 2 contra X de entidad 1  
+   0008 7E            [ 7]  102         ld a,(hl)         ;; A  = X entidad 2 
+   0009 23            [ 6]  103         inc hl            ;;  
+   000A 86            [ 7]  104         add a,(hl)        ;; A += ancho entidad 2
+   000B 90            [ 4]  105         sub b             ;; A -= X entidad 1
+   000C 38 12         [12]  106            jr c,no_collision
+                            107     ;;Se ha comprobado que las dos entidades coinciden en el eje X.  
+                            108     ;;Ahora comprobamos abajo de entidad 1 contra Y de entidad 2
+   000E 23            [ 6]  109         inc hl            ;;
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 4.
+Hexadecimal [16-Bits]
+
+
+
+   000F 7E            [ 7]  110         ld a,(hl)         ;; A  = Y entidad 1
+   0010 47            [ 4]  111         ld b,a            ;; B  = Y de entidad 1
+   0011 23            [ 6]  112         inc hl            ;;  
+   0012 86            [ 7]  113         add a,(hl)        ;; A += alto entidad 1
+   0013 23            [ 6]  114         inc hl            ;;
+   0014 96            [ 7]  115         sub a,(hl)        ;; A -= Y entidad 2
+   0015 38 09         [12]  116             jr c,no_collision ;;
+                            117     ;;comprobamos abajo de entidad 2 contra Y de entidad 1  
+   0017 7E            [ 7]  118         ld a,(hl)         ;; A  = Y entidad 2 
+   0018 23            [ 6]  119         inc hl            ;;  
+   0019 86            [ 7]  120         add a,(hl)        ;; A += alto entidad 2
+   001A 90            [ 4]  121         sub b             ;; recuperamos Y de entidad 1 y restamos
+   001B 38 03         [12]  122             jr c,no_collision ;;
+                            123     ;;  Ambas entidades coinciden en eje X e Y. Hay colision. Retornamos 
+                            124     ;; un valor diferente a 0 en el registro A para declarar que ha habido choque
+   001D 3E 01         [ 7]  125         ld a,#1           ;; 
+   001F C9            [10]  126 ret
+                            127         
+   0020                     128 no_collision:
+                            129     ;;  Tras comprobar que no hay colision entre las dos entidades, retornamos un
+                            130     ;; valor 0 para declarar que no hubo colision.
+   0020 3E 00         [ 7]  131         ld a,#0          ;;
+                            132 
+                            133 
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180), page 5.
+Hexadecimal [16-Bits]
+
+
+
+                             28 
+                             29   
+   0022 C9            [10]   30    ret         ;; [3]

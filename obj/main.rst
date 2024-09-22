@@ -31,15 +31,20 @@ Hexadecimal [16-Bits]
                              26 ;;  right after _CODE area contents.
                              27 ;;
                              28 .module main.s
-                             29 .globl _collision_check
-                             30 .area _DATA
-                             31 
+                             29 .globl cpct_collision_check_asm
+                             30 .globl _cpct_collision_check
+                             31 .area _DATA
                              32 
-                             33 .area _CODE
-   4010                      34 _main::
-                             35 
-   4010 CD 00 40      [17]   36   call _collision_check
-                             37 
-                             38    ;; Loop forever
-   4013                      39 loop:
-   4013 18 FE         [12]   40    jr    loop
+   4054 10 04 10 04 20 04    33 _array:: .db 0x10,4,0x10,4,0x20,4,0x20,4
+        20 04
+   405C DE AD BE EF          34 junk::  .db 0xde,0xad,0xbe,0xef
+                             35 .area _CODE
+   404C                      36 _main::
+                             37  ;;  ld hl,#_array
+                             38  ;; call cpct_collision_check_asm
+   404C 21 54 40      [10]   39   ld hl,#_array
+   404F CD 29 40      [17]   40   call _cpct_collision_check
+                             41 
+                             42    ;; Loop forever
+   4052                      43 loop:
+   4052 18 FE         [12]   44    jr    loop

@@ -44,24 +44,31 @@
 ;; Para ello calcula los limites de cada entidad y los compara con la otra entidad.
 ;; 
 ;; A--ENT1--B  C--ENT2--D
+;;
 ;;    Para la primera comprobacion se calcula posicion X(A) mas el ancho de la entidad(B).
 ;; Despues se le resta la X(C) de la segunda entidad. Si el resultado es positivo 
 ;; (C<B,no hay acarreo),se sigue calculando el sigueinte paso. Si el resultado es 
 ;; negativo (C>B,hay acarreo), termina la funcion, retornando en A un 0. 
-;;    Si hay colision , se retorna en A un 1.
+;;
+;; C--ENT2--D  A--ENT1--B  
+;;    Las siguientes comprobaciones son D contra A,en eje X. Tras esta comprobacion,
+;; se procede a comprobar las coordenadas, pero en eje Y. 
+;;    Si tras las cuatro comprobaciones hay colision , se retorna en A un 1.
 ;;
 ;; Destroyed Register values:
 ;;    AF, HL
 ;;
 ;; Required memory:
-;;    C-bindings - 21 bytes
-;;  ASM-bindings - 19 byte
+;;    C-bindings - 32 +b bytes
+;;  ASM-bindings - 32 +b byte
 ;;
 ;; Time Measures:
 ;; (start code)
 ;;     Case   | microSecs (us) | CPU Cycles
 ;; -----------------------------------------
-;;     Any    |      23        |     92
+;;     Best   |      18        |     72
+;; -----------------------------------------
+;;     Worst  |      51        |     204
 ;; -----------------------------------------
 ;; Asm saving |      -2        |     -8
 ;; -----------------------------------------
@@ -71,47 +78,56 @@
 ;;    Adapted code by Fran Gallego. 
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;input Hl como array a comprobar. El orden debe ser el siguiente:
+;;
+;; input Hl como array a comprobar. El orden debe ser el siguiente:
 ;; Hl+0 = X entidad 1
 ;; HL+1 = ancho entidad 1
 ;; HL+2 = X entidad 2
 ;; HL+3 = ancho entidad 2
-;; Hl+4 = 
-;; HL+5 = 
-;; HL+6 = 
-;; HL+7 = 
-;; se comprueba si dos objetos se colisionan en X e Y
+;; Hl+4 = Y entidad 1
+;; HL+5 = alto entidad 1
+;; HL+6 = Y entidad 2
+;; HL+7 = alto entidad 2
 ;;
-;; A--ITEM1--B  C--ITEM2--D
-;; if (B < C) no_collision
-;; C--ITEM2--D  A--ITEM1--B
-;; if (D < A) no_collision
-;;
-_collision_check::
+;;_collision_check::
     ;;cargamos primero la X de entidad 1 y le sumamos el ancho
         ld a,(hl)       ;;A  = X entidad 1
-        inc hl          ;;HL = ancho entidad 
+        ld b,a          ;;B  = X entidad 1
+        inc hl          ;; 
         add a,(hl)      ;;A += ancho entidad 1
-    ;;restamos la X de entidad 2
-        inc hl          ;;HL = X entidad 2
+        inc hl          ;;
         sub a,(hl)      ;;A -= X entidad 2
-        jr c,no_collision  
+            jr c,no_collision 
     ;;comprobamos derecha de entidad 2 contra X de entidad 1  
-        inc hl            ;;\
-        ld a,(hl)         ;; | 
-        inc hl            ;; | A=X + alto
-        add a,(hl)        ;; |
-        inc hl            ;;/
-        sub a,(hl)        ;; A-=X ent1   
-        jr c,no_collision ;;
-
-
-        ld a,#1         ;;hay colision
+        ld a,(hl)         ;; A  = X entidad 2 
+        inc hl            ;;  
+        add a,(hl)        ;; A += ancho entidad 2
+        sub b             ;; A -= X entidad 1
+           jr c,no_collision
+    ;;Se ha comprobado que las dos entidades coinciden en el eje X.  
+    ;;Ahora comprobamos abajo de entidad 1 contra Y de entidad 2
+        inc hl            ;;
+        ld a,(hl)         ;; A  = Y entidad 1
+        ld b,a            ;; B  = Y de entidad 1
+        inc hl            ;;  
+        add a,(hl)        ;; A += alto entidad 1
+        inc hl            ;;
+        sub a,(hl)        ;; A -= Y entidad 2
+            jr c,no_collision ;;
+    ;;comprobamos abajo de entidad 2 contra Y de entidad 1  
+        ld a,(hl)         ;; A  = Y entidad 2 
+        inc hl            ;;  
+        add a,(hl)        ;; A += alto entidad 2
+        sub b             ;; recuperamos Y de entidad 1 y restamos
+            jr c,no_collision ;;
+    ;;  Ambas entidades coinciden en eje X e Y. Hay colision. Retornamos 
+    ;; un valor diferente a 0 en el registro A para declarar que ha habido choque
+        ld a,#1           ;; 
 ret
         
 no_collision:
-        ld a,#0         ;;no hay colision
-ret
+    ;;  Tras comprobar que no hay colision entre las dos entidades, retornamos un
+    ;; valor 0 para declarar que no hubo colision.
+        ld a,#0          ;;
+
 

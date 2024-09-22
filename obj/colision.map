@@ -8,31 +8,61 @@ Area                                    Addr        Size        Decimal Bytes (A
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
      00000000  .__.ABS.                           main.s
-     00000000  l__DATA                         
-     00000015  l__CODE                         
+     00000000  l__CABS                         
+     00000000  l__DABS                         
+     00000000  l__GSFINAL                      
+     00000000  l__GSINIT                       
+     00000000  l__HOME                         
+     00000000  l__INITIALIZED                  
+     00000000  l__INITIALIZER                  
+     00000000  s__CABS                         
+     00000000  s__DABS                         
+     0000000C  l__DATA                         
+     00000054  l__CODE                         
      00004000  s__CODE                         
-     00004015  s__DATA                         
+     00004054  s__DATA                         
+     00004060  s__GSFINAL                      
+     00004060  s__GSINIT                       
+     00004060  s__HOME                         
+     00004060  s__INITIALIZED                  
+     00004060  s__INITIALIZER                  
 
 ASxxxx Linker V03.00 + NoICE + sdld,  page 2.
 Hexadecimal  [32-Bits]
 
 Area                                    Addr        Size        Decimal Bytes (Attributes)
 --------------------------------        ----        ----        ------- ----- ------------
-_CODE                               00004000    00000015 =          21. bytes (REL,CON)
+_CODE                               00004000    00000054 =          84. bytes (REL,CON)
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
-     00004000  _collision_check                   collisions
-     00004010  _main                              main.s
+     00004000  _check                             check
+     00004006  cpct_collision_check_asm           cpct_collisions
+     00004029  _cpct_collision_check              cpct_collisions
+     0000404C  _main                              main.s
 
 ASxxxx Linker V03.00 + NoICE + sdld,  page 3.
+Hexadecimal  [32-Bits]
+
+Area                                    Addr        Size        Decimal Bytes (Attributes)
+--------------------------------        ----        ----        ------- ----- ------------
+_DATA                               00004054    0000000C =          12. bytes (REL,CON)
+
+      Value  Global                              Global Defined In Module
+      -----  --------------------------------   ------------------------
+     00004054  _array                             main.s
+     0000405C  junk                               main.s
+
+ASxxxx Linker V03.00 + NoICE + sdld,  page 4.
 
 Files Linked                              [ module(s) ]
 
-obj/collision_2_items.rel                 [ collisions ]
+obj/check.rel                             [ check ]
+obj/cpct_divideby10_asmbindings.rel       [ cpct_collisions ]
+obj/cpct_divideby10_cbindings.rel         [ cpct_collisions ]
 obj/main.rel                              [ main.s ]
 
-ASxxxx Linker V03.00 + NoICE + sdld,  page 4.
+ASxxxx Linker V03.00 + NoICE + sdld,  page 5.
 
 User Base Address Definitions
 
